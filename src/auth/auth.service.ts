@@ -39,9 +39,12 @@ export class AuthService {
   async login(data: AuthDto) {
     const user = await this.usersService.findByUsername(data.username);
     if (!user) throw new BadRequestException('User does not exist');
-    const passwordMatches = await argon2.verify(user.password, data.password);
-    if (!passwordMatches)
-      throw new BadRequestException('Password is incorrect');
+    // временное условие, не знаю как вносить хэшированный пароль через pgadmin
+    if (user.password !== data.password) {
+      const passwordMatches = await argon2.verify(user.password, data.password);
+      if (!passwordMatches)
+        throw new BadRequestException('Password is incorrect');
+    }
     const tokens = await this.getTokens(user.id, user.username);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
     return tokens;
@@ -67,7 +70,7 @@ export class AuthService {
         },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '15m',
+          expiresIn: '10s',
         },
       ),
       this.jwtService.signAsync(

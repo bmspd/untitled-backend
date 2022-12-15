@@ -6,12 +6,14 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AccessTokenGuard } from '../common/guards/accessToken.guard';
+import { Request } from 'express';
 
 @Controller('users')
 export class UsersController {
@@ -22,6 +24,7 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @UseGuards(AccessTokenGuard)
   @Get()
   findAll() {
     return this.usersService.findAll();
