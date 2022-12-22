@@ -47,10 +47,19 @@ export class AuthService {
     }
     const tokens = await this.getTokens(user.id, user.username);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
-    return tokens;
+    return { ...tokens, user_id: user.id };
   }
   async logout(userId: number) {
     return this.usersService.update(userId, { refreshToken: null });
+  }
+  async getInfo(userId: string) {
+    return this.usersService.findById(+userId);
+  }
+  async credentials(authorization: string | undefined) {
+    if (!authorization) throw new ForbiddenException('Access denied');
+    const splitAuth = authorization.split(' ');
+    const accessToken = splitAuth[1];
+    if (!accessToken) throw new ForbiddenException('Access denied');
   }
   hashData(data: string) {
     return argon2.hash(data);
@@ -70,7 +79,7 @@ export class AuthService {
         },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '10s',
+          expiresIn: '15m',
         },
       ),
       this.jwtService.signAsync(

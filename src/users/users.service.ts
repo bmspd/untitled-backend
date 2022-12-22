@@ -27,7 +27,6 @@ export class UsersService {
   async findByUsername(username: string): Promise<User> {
     return this.userRepository.findOne({ where: { username } });
   }
-
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.userRepository.preload({
       id,
